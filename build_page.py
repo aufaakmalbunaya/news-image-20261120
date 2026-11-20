@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
-"""Build the front page for Friday 20 November 2026.
+"""Build the front page for Friday 20 November 2026 (round 3).
 
-Renders a dense one-page newspaper (1024x1024 PNG) with the Pillow
+Renders a one-page newspaper (1024x1024 PNG) with the Pillow
 library, which is only a build-time tool on this machine: the entry
 program itself (main.py) is standard library only and just copies the
-finished image. Every story on the page was first reported on Friday
-20 November 2026; stories first reported on 19 November are named in
-the date-check footer instead of being shown as news.
+finished image. Every story on the page happened, or was first
+reported, on Friday 20 November 2026; stories first reported on
+19 November are named in the date-check footer instead of being shown
+as news. Round 3 keeps round 2's winning shape (huge serif masthead,
+six-number strip, 3 heroes + 10 illustrated leads, large map, date
+check) and fixes what round 2 got wrong: the region counts now add up
+to the story total (36), the Kyiv lead is Friday's overnight missile
+barrage instead of Thursday's embassy strikes, the COP31 draft is
+described as it stands (fossil-fuel language and the $120bn figure
+dropped), the cricket picture no longer carries overlapping score
+text, and the briefs run as readable flowing sentences instead of
+cramped cut-off lines.
 
 Run:  python3 build_page.py        (writes entry.png next to this file)
 """
@@ -29,7 +38,7 @@ TEAL = (15, 118, 110)
 GREY = (110, 105, 95)
 LIGHT = (238, 232, 218)
 SKY = (186, 214, 232)
-SEA = (24, 68, 110)
+SEA = (14, 38, 68)
 SAND = (226, 205, 158)
 GREEN = (46, 110, 58)
 GOLD = (198, 148, 32)
@@ -161,9 +170,9 @@ def region_tabs(y, items):
 # --- illustrations: small vector scenes, drawn with PIL only --------------
 def art_cyclone(x0, y0, x1, y1):
     rect(x0, y0, x1, y1, fill=(23, 58, 110))
-    cx, cy = (x0 + x1) // 2 + 30, (y0 + y1) // 2
-    for r, col in ((46, WHITE), (38, (170, 205, 235)), (30, WHITE),
-                   (22, (170, 205, 235)), (14, WHITE), (7, (240, 220, 140))):
+    cx, cy = (x0 + x1) // 2 + 30, (y0 + y1) // 2 - 6
+    for r, col in ((34, WHITE), (28, (170, 205, 235)), (22, WHITE),
+                   (16, (170, 205, 235)), (10, WHITE), (5, (240, 220, 140))):
         d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=col, width=4)
     for i in range(9):
         x = x0 + 12 + i * 16
@@ -171,7 +180,8 @@ def art_cyclone(x0, y0, x1, y1):
     rect(x0, y1 - 16, x1, y1, fill=SAND)
     d.polygon([(x0 + 14, y1 - 16), (x0 + 34, y1 - 16), (x0 + 24, y1 - 34)],
               fill=GREEN)
-    text(x0 + 6, y1 - 14, "LANDFALL: NOON IST", font(SANS_B, 9), fill=INK)
+    text(x0 + 6, y1 - 14, "LANDFALL: FRIDAY MORNING",
+         font(SANS_B, 9), fill=INK)
     d.ellipse([x1 - 16, y1 - 13, x1 - 8, y1 - 5], fill=RED)
 
 
@@ -241,19 +251,26 @@ def art_berlin(x0, y0, x1, y1):
     rect(x0 + 8, y1 - 2, x0 + 46, y1 + 4, fill=GOLD)
 
 
-def art_kyiv(x0, y0, x1, y1):
-    rect(x0, y0, x1, y1, fill=(30, 40, 60))
-    for bx, bw, bh in ((x0 + 10, 34, 44), (x0 + 52, 26, 60),
-                       (x0 + 86, 40, 36), (x0 + 134, 30, 52)):
-        rect(bx, y1 - bh, bx + bw, y1, fill=(90, 100, 130))
-        for wy in range(y1 - bh + 8, y1 - 6, 12):
-            for wx in range(bx + 5, bx + bw - 5, 11):
-                rect(wx, wy, wx + 4, wy + 6, fill=(240, 200, 90))
-    d.ellipse([(x0 + x1) // 2 - 14, y0 + 8, (x0 + x1) // 2 + 14, y0 + 36],
-              fill=(240, 140, 40))
-    d.line([x0 + 10, y0 + 14, x1 - 10, y0 + 30], fill=(240, 140, 40), width=2)
-    for sx in (x0 + 40, x0 + 120, x1 - 30):
-        d.ellipse([sx, y0 + 22, sx + 3, y0 + 25], fill=WHITE)
+def art_missiles(x0, y0, x1, y1):
+    # Friday's overnight barrage: missile streaks over a dark Kyiv,
+    # a bridge across the Dnipro below, fires in the districts.
+    rect(x0, y0, x1, y1, fill=(18, 28, 48))
+    for sx, sy in ((x0 + 30, y0 + 6), (x0 + 90, y0 + 10), (x0 + 150, y0 + 5)):
+        d.ellipse([sx, sy, sx + 3, sy + 3], fill=WHITE)
+    streaks = [(x0 + 16, y0 + 4, x0 + 62, y0 + 30),
+               (x0 + 70, y0 + 2, x0 + 118, y0 + 28),
+               (x0 + 124, y0 + 6, x0 + 168, y0 + 30)]
+    for sx0, sy0, sx1, sy1 in streaks:
+        d.line([sx0, sy0, sx1, sy1], fill=(240, 140, 40), width=3)
+        d.ellipse([sx1 - 3, sy1 - 3, sx1 + 3, sy1 + 3], fill=(250, 200, 90))
+    # Bridge arches over the river at the bottom.
+    rect(x0, y1 - 14, x1, y1 - 10, fill=(90, 100, 130))
+    for bx in (x0 + 20, x0 + 76, x0 + 132):
+        d.arc([bx, y1 - 26, bx + 44, y1 - 6], 180, 360, fill=(120, 130, 160),
+              width=3)
+    rect(x0, y1 - 6, x1, y1, fill=(40, 90, 140))
+    for fx in (x0 + 44, x0 + 120, x1 - 28):
+        d.ellipse([fx, y1 - 24, fx + 6, y1 - 18], fill=(240, 140, 40))
 
 
 def art_senate(x0, y0, x1, y1):
@@ -284,16 +301,18 @@ def art_nvidia(x0, y0, x1, y1):
 
 
 def art_cricket(x0, y0, x1, y1):
+    # Clean scene, no score text inside the picture: stumps, bat, ball,
+    # and one big 118 that cannot collide with anything else.
     rect(x0, y0, x1, y1, fill=(70, 140, 70))
     rect(x0, y0 + 18, x1, y0 + 30, fill=(220, 200, 150))
     for i in range(3):
         sx = x0 + 22 + i * 7
         rect(sx, y0 + 8, sx + 3, y0 + 24, fill=(240, 220, 160))
     d.line([x0 + 20, y0 + 8, x0 + 40, y0 + 8], fill=(240, 220, 160), width=2)
-    d.ellipse([x1 - 30, y0 + 14, x1 - 18, y0 + 26], fill=(200, 40, 40))
-    d.line([x0 + 60, y1 - 10, x0 + 96, y1 - 34], fill=(150, 100, 50), width=6)
-    text(x1 - 58, y1 - 20, "317/6", font(SERIF_B, 15), fill=WHITE)
-    text(x0 + 6, y0 + 4, "146*", font(SERIF_B, 13), fill=WHITE)
+    d.ellipse([x1 - 30, y0 + 6, x1 - 18, y0 + 18], fill=(200, 40, 40))
+    d.line([x0 + 56, y1 - 8, x0 + 92, y1 - 32], fill=(150, 100, 50), width=6)
+    d.line([x0 + 92, y1 - 32, x0 + 104, y1 - 40], fill=(120, 80, 40), width=4)
+    text(x1 - 8, y1 - 26, "118", font(SERIF_B, 20), fill=WHITE, anchor="ra")
 
 
 def art_gta(x0, y0, x1, y1):
@@ -323,15 +342,20 @@ def art_boat(x0, y0, x1, y1):
     d.ellipse([x0 + 24, y0 + 10, x0 + 40, y0 + 26], fill=(240, 180, 60))
 
 
-def art_drought(x0, y0, x1, y1):
-    rect(x0, y0, x1, y1, fill=(240, 220, 170))
-    d.ellipse([x1 - 48, y0 + 6, x1 - 12, y0 + 36], fill=(240, 160, 40))
-    for i, (px, py) in enumerate(((x0 + 20, y1 - 26), (x0 + 70, y1 - 16),
-                                  (x0 + 120, y1 - 30), (x0 + 160, y1 - 18))):
-        d.line([px, py, px + 26, py], fill=(150, 110, 60), width=2)
-        d.line([px + 8, py, px + 16, py + 10], fill=(150, 110, 60), width=2)
-    d.line([x0 + 30, y1 - 44, x0 + 44, y1 - 44], fill=GREEN, width=3)
-    d.line([x0 + 37, y1 - 44, x0 + 37, y1 - 30], fill=GREEN, width=3)
+def art_kospi(x0, y0, x1, y1):
+    # Seoul's Friday slide: a red line falling across the board.
+    rect(x0, y0, x1, y1, fill=(16, 30, 52))
+    for gy in (y0 + 14, y0 + 26, y0 + 38):
+        d.line([x0 + 6, gy, x1 - 6, gy], fill=(40, 60, 90), width=1)
+    pts = [(x0 + 10, y0 + 10), (x0 + 46, y0 + 16), (x0 + 82, y0 + 14),
+           (x0 + 118, y0 + 26), (x0 + 154, y0 + 34), (x1 - 12, y0 + 44)]
+    d.line(pts, fill=(220, 70, 60), width=3)
+    for px, py in pts:
+        d.ellipse([px - 3, py - 3, px + 3, py + 3], fill=(240, 120, 100))
+    text(x1 - 8, y0 + 4, "–4%", font(SERIF_B, 14), fill=(220, 70, 60),
+         anchor="ra")
+    text(x0 + 6, y1 - 14, "KOSPI · FRIDAY OPEN", font(SANS_B, 9),
+         fill=WHITE)
 
 
 def art_baseball(x0, y0, x1, y1):
@@ -369,13 +393,13 @@ CONTINENTS = [
 # Pin positions (map-local coords) for stories 1-13.
 PINS = {
     1: (348, 62), 2: (238, 46), 3: (94, 28), 4: (322, 40), 5: (216, 26),
-    6: (252, 32), 7: (70, 50), 8: (30, 40), 9: (408, 104), 10: (52, 66),
-    11: (204, 82), 12: (428, 84), 13: (106, 54),
+    6: (252, 32), 7: (102, 44), 8: (30, 40), 9: (408, 104), 10: (52, 66),
+    11: (204, 82), 12: (375, 30), 13: (108, 52),
 }
 
 
 def draw_map(x0, y0, x1, y1):
-    rect(x0, y0, x1, y1, fill=(200, 222, 238))
+    rect(x0, y0, x1, y1, fill=SEA)
     sx = (x1 - x0) / 440.0
     sy = (y1 - y0) / 150.0
     for poly in CONTINENTS:
@@ -388,6 +412,33 @@ def draw_map(x0, y0, x1, y1):
         text(cx, cy - 7, str(num), font(SANS_B, 10), fill=WHITE, anchor="ma")
 
 
+def flow_briefs(x0, y0, x1, y1, briefs):
+    """Briefs as flowing sentences: red bold 'N PLACE — ' lead, then
+    serif body, wrapping across the whole block. Returns the y below
+    the last line."""
+    lf = font(SANS_B, 9)
+    bf = font(SERIF, 10)
+    leading = 13
+    x, y = x0, y0
+    space = tw(" ", bf)
+    for i, (place, body) in enumerate(briefs):
+        lead = "%d %s — " % (i + 14, place)
+        for word in (lead + body).split():
+            is_lead = word in lead.split()
+            f = lf if is_lead else bf
+            fill = RED if is_lead else INK
+            w = tw(word, f)
+            if x + w > x1 and x > x0:
+                x = x0
+                y += leading
+                if y > y1:
+                    return y
+            text(x, y, word, f, fill=fill)
+            x += w + space
+        x += space * 2
+    return y + leading
+
+
 # --- story data: every item first reported Friday 20 November 2026 ---------
 NUMBERS = [
     ("300,000", "evacuated ahead of Cyclone Akvan (IMD)"),
@@ -398,37 +449,37 @@ NUMBERS = [
     ("99", "GTA VI's Metacritic score"),
 ]
 
+# Counts add to 36: 6 + 9 + 10 + 2 + 2 + 4 + 3.
 REGIONS = [
-    ("EUROPE", 12, NAVY), ("THE AMERICAS", 10, TEAL),
-    ("ASIA-PACIFIC", 12, RED), ("MIDEAST", 3, (120, 90, 30)),
-    ("AFRICA", 3, GREEN), ("OCEANIA", 3, (90, 60, 120)),
-    ("WORLD", 8, GREY),
+    ("EUROPE", 6, NAVY), ("THE AMERICAS", 9, TEAL),
+    ("ASIA-PACIFIC", 10, RED), ("MIDEAST", 2, (120, 90, 30)),
+    ("AFRICA", 2, GREEN), ("OCEANIA", 4, (90, 60, 120)),
+    ("WORLD", 3, GREY),
 ]
 
 HEROES = [
     dict(num=1, place="ODISHA", beat="STORM",
          head="Akvan comes ashore in India",
-         body=("Severe Cyclone Akvan crosses the Andhra–Odisha coast near "
-               "Gopalpur around noon; winds 90–100 gusting 110 km/h."),
+         body=("Severe Cyclone Akvan crosses the coast near Gopalpur on "
+               "Friday; winds 90–100, gusting 110 km/h."),
          art=art_cyclone),
     dict(num=2, place="ANTALYA", beat="CLIMATE",
          head="COP31 reaches its final day",
-         body=("Negotiators face a Friday deadline; the draft calls for a "
-               "faster fossil-fuel phase-out while a $120bn adaptation "
-               "fund stays open."),
+         body=("No deal on the final day; the slimmed draft drops "
+               "fossil-fuel language and the $120bn figure."),
          art=art_cop),
     dict(num=3, place="NEW YORK", beat="MARKETS",
          head="Anthropic ends first day up 17%",
          body=("The Claude maker opens at $111.50 and closes at $97.17, "
-               "still 17% above its $83 offer, as the S&P 500 falls 2.02%."),
+               "up 17% on its $83 offer."),
          art=art_ipo),
 ]
 
 LEADS = [
     dict(num=4, place="SHENZHEN", beat="DIPLOMACY",
          head="Leaders issue peace declaration",
-         body=("Hours after the trilateral, the three leaders publish a "
-               "joint declaration."),
+         body=("Trump, Xi and Putin publish a joint peace declaration; it "
+               "says nothing on Ukraine or Iran."),
          art=art_flags),
     dict(num=5, place="BERLIN", beat="EUROPE",
          head="Europe ready for Ukraine talks",
@@ -436,10 +487,11 @@ LEADS = [
                "talks with Russia."),
          art=art_berlin),
     dict(num=6, place="KYIV", beat="WAR",
-         head="Strikes hit Kyiv embassies",
-         body=("One person is killed; the Dutch and Austrian embassies and "
-               "a cathedral are hit."),
-         art=art_kyiv),
+         head="Missiles rain on Kyiv overnight",
+         body=("Ballistic missiles strike in waves before dawn; three "
+               "bridges over the Dnipro are damaged and a power plant "
+               "is hit."),
+         art=art_missiles),
     dict(num=7, place="WASHINGTON", beat="POLITICS",
          head="Senate rejects Iran war-powers bid",
          body=("The resolution fails 51–48, with three Republicans in "
@@ -447,33 +499,33 @@ LEADS = [
          art=art_senate),
     dict(num=8, place="CALIFORNIA", beat="TECH",
          head="Nvidia slides on record quarter",
-         body=("Shares fall 3.3% to $145.98 after record $115.8bn sales, "
-               "as investors fret over leadership."),
+         body=("Shares fall 3.3% to $145.98 after record $115.8bn sales; "
+               "California opens an AI-chip inquiry."),
          art=art_nvidia),
     dict(num=9, place="WELLINGTON", beat="SPORT",
          head="Phillips makes history with 118",
          body=("The first to score centuries in all formats against India "
-               "in one year."),
+               "in one year; NZ reach 317-6 at lunch."),
          art=art_cricket),
     dict(num=10, place="WORLD", beat="GAMES",
          head="GTA VI's first full day on sale",
-         body=("Sensor Tower counts about $2.36bn and 24.6m copies sold; "
-               "Metacritic 99."),
+         body=("Sensor Tower puts day-one sales at 24.6m copies and "
+               "$2.36bn; Metacritic 99."),
          art=art_gta),
     dict(num=11, place="SENEGAL", beat="MIGRATION",
          head="Migrant boat sinks off Senegal",
-         body=("Dozens missing; four bodies recovered from a boat "
-               "carrying 50–100 people."),
+         body=("Four bodies are recovered after a boat capsizes off "
+               "Yenne; dozens remain missing."),
          art=art_boat),
-    dict(num=12, place="TONGA", beat="PACIFIC",
-         head="Drought emergency in Tonga",
-         body=("The Pacific kingdom declares an emergency as El Niño "
-               "drought bites."),
-         art=art_drought),
+    dict(num=12, place="SEOUL", beat="MARKETS",
+         head="Asian stocks slide on AI fears",
+         body=("The KOSPI falls more than 4% at the open; the Nikkei "
+               "slides 4.5% as chip shares sink."),
+         art=art_kospi),
     dict(num=13, place="WASHINGTON", beat="SPORT",
          head="Trump pardons Pete Rose",
          body=("The late slugger, banned for life for betting, is "
-               "pardoned after his death."),
+               "pardoned for tax crimes after his death."),
          art=art_baseball),
 ]
 
@@ -482,59 +534,47 @@ BRIEFS = [
     ("HORMUZ", "Four attacks on ships in 96 hours."),
     ("GAZA", "Aid groups score the peace plan 4 out of 26."),
     ("WASHINGTON", "The Iran war has cost $48.3bn."),
-    ("LONDON", "UK, Norway fund £100m-plus for naval craft."),
+    ("LONDON", "UK and Norway fund £100m-plus for naval craft."),
     ("BELGRADE", "Cupic elected speaker of new parliament."),
-    ("GREENLAND", "Parliament approves a defence agreement."),
+    ("SEOUL", "Ruling party moves to impeach the top judge."),
     ("JAKARTA", "Parliament passes an asset-forfeiture bill."),
-    ("COPENHAGEN", "Q3 GDP due; consensus sees +0.7%."),
-    ("DENVER", "Democrats stay divided despite midterm wins."),
-    ("DUBLIN", "Harris seeks border-poll criteria talks."),
-    ("LOS ANGELES", "Thomas Markle is found fit to stand trial."),
-    ("PUNJAB", "A truck driver wins $1.3m in a Diwali lottery."),
+    ("ROME", "A 24-hour general strike hits Italy."),
+    ("SAN SALVADOR", "Bukele files to run for a third term."),
+    ("MATO GROSSO", "Lula visits Chief Raoni as Brazil recognises his land."),
     ("JOHANNESBURG", "DJ Lag celebrates featuring on GTA 6."),
     ("SYDNEY", "ASX futures fall 1%; jobless rate rises to 4.9%."),
-    ("MUMBAI", "Sensex slips at the open; Nifty stands at 25,199."),
+    ("MUMBAI", "Indian shares open lower after a week near highs."),
     ("ANTALYA", "Pledges point to about 2.6°C of warming."),
-    ("NEW DELHI", "Pakistan minister to lead Delhi SCO trip."),
+    ("NEW DELHI", "Pakistan minister to lead a Delhi SCO trip."),
     ("TOKYO", "PM Takaichi seeks continued dialogue with China."),
     ("CANBERRA", "Australia sanctions West Bank settler groups."),
     ("SOFIA", "Sunken LPG tanker was hit by drones."),
-    ("WASHINGTON", "US files Supreme Court plea on TPS."),
+    ("WASHINGTON", "US files a Supreme Court plea on TPS."),
     ("TAIPEI", "Taiwan reports 25 incursions by Chinese bombers."),
-    ("FLORIDA", "Floods shut schools in five counties."),
-    ("IOWA", "Army postpones its lead-azide blast to Monday."),
-    ("WORLD", "Children's Day is marked in about 190 countries."),
+    ("TONGA", "Drought emergency declared as El Niño bites."),
     ("TOKYO", "October core CPI rose 2.2%."),
-    ("ROME", "A 24-hour general strike; a rail strike runs on."),
-    ("BEIJING", "China to hold loan rates at 3.0%."),
-    ("HONG KONG", "Hong Kong Open reaches the semifinals."),
-    ("USA", "Nine NBA Cup games tonight; Lakers host Kings."),
-    ("DOHA", "India A open their Rising Stars campaign."),
-    ("CHINA", "OPPO's Watch 5 goes on sale, from CNY 899."),
-    ("CHINA", "Huawei unveils a new phone brand, Osta."),
-    ("JAPAN", "Hayabusa2 abandons its asteroid landing."),
 ]
 
 DATE_CHECK = (
     "First reported Thursday 19 Nov, so NOT on this page as news: the "
     "Trump–Xi–Putin trilateral meeting itself · Anthropic's $83 IPO pricing "
-    "· GTA VI's midnight unlock · the ICJ's Rohingya genocide judgment · the "
-    "Van Gogh record $190.4m sale · the EU's proposed €45bn loan for Ukraine "
-    "· the US–Venezuela military deal · Fiji's drought disaster declaration · "
-    "Han Duck-soo's acquittal · the Crimean Bridge attack · the Houthi "
-    "strike on Riyadh's PIF tower."
+    "· GTA VI's midnight unlock · the Kyiv embassy strikes · the ICJ's "
+    "Rohingya genocide judgment · the Van Gogh record $190.4m sale · the "
+    "EU's proposed €45bn loan for Ukraine · the US–Venezuela military deal · "
+    "Fiji's drought disaster declaration · Han Duck-soo's acquittal · the "
+    "Crimean Bridge attack · the Houthi strike on Riyadh's PIF tower."
 )
 
 SOURCES = ("Every story here happened, or was first reported, on Friday "
            "20 November 2026. Disputed claims are attributed, not stated as "
-           "fact. Sources: Reuters, AP, AFP, BBC, The Hindu, IMD, ICC, "
-           "UNEP. Original drawings.")
+           "fact. Sources: Reuters, AP, AFP, BBC, The Hindu, IMD, UNEP, "
+           "Sensor Tower. Original drawings.")
 
 
 def build():
     # --- masthead ---------------------------------------------------------
     text(8, 6, "THE WORLD IN ONE DAY", font(SANS_B, 11), fill=RED)
-    rt = "FRIDAY'S NEWS · ONE PAGE · 48 STORIES"
+    rt = "FRIDAY'S NEWS · ONE PAGE · 36 STORIES"
     text(W - 8, 6, rt, font(SANS_B, 11), fill=INK, anchor="ra")
     hline(8, W - 8, 24, width=2)
     text(W // 2, 30, "Friday 20 November 2026", font(SERIF_B, 56),
@@ -554,56 +594,35 @@ def build():
     hw = (W - 16 - 12) // 3
     for i, h in enumerate(HEROES):
         x0 = 8 + i * (hw + 6)
-        story_card(x0, 226, x0 + hw, 382, h["num"], h["place"], h["beat"],
+        story_card(x0, 226, x0 + hw, 380, h["num"], h["place"], h["beat"],
                    h["head"], h["body"], h["art"], head_size=19,
-                   body_size=11, art_h=64, kicker_size=10, body_lines=2)
+                   body_size=11, art_h=56, kicker_size=10, body_lines=2)
 
     # --- ten more illustrated leads, two rows of five ----------------------
     lw = (W - 16 - 4 * 6) // 5
     for r in range(2):
-        y0 = 390 + r * 172
+        y0 = 388 + r * 168
         for c in range(5):
             h = LEADS[r * 5 + c]
             x0 = 8 + c * (lw + 6)
-            story_card(x0, y0, x0 + lw, y0 + 164, h["num"], h["place"],
+            story_card(x0, y0, x0 + lw, y0 + 160, h["num"], h["place"],
                        h["beat"], h["head"], h["body"], h["art"],
-                       head_size=13, body_size=9, art_h=58,
+                       head_size=13, body_size=9, art_h=52,
                        kicker_size=8)
 
     # --- map + briefs ------------------------------------------------------
-    y0 = 742
+    y0 = 732
     hline(8, W - 8, y0 - 8, width=1)
     text(8, y0, "WHERE IT HAPPENED", font(SANS_B, 11), fill=RED)
-    text(412, y0, "ALSO ON FRIDAY 20 NOVEMBER — 35 MORE STORIES",
+    text(412, y0, "ALSO ON FRIDAY 20 NOVEMBER — 23 MORE STORIES",
          font(SANS_B, 11), fill=RED)
-    draw_map(8, y0 + 20, 400, y0 + 172)
-    text(8, y0 + 178, "Red numbers mark stories 1–13. Positions are "
+    draw_map(8, y0 + 16, 400, y0 + 168)
+    text(8, y0 + 174, "Red numbers mark stories 1–13. Positions are "
          "approximate.", font(SANS, 9), fill=GREY)
-    bf = font(SERIF, 9)
-    lf = font(SANS_B, 9)
-    col_w = 296
-    for i, (place, body) in enumerate(BRIEFS):
-        col = i // 18
-        row = i % 18
-        bx = 412 + col * (col_w + 8)
-        by = y0 + 20 + row * 9
-        if by > y0 + 172:
-            continue
-        lead = "%d %s — " % (i + 14, place)
-        lw = tw(lead, lf)
-        words = body.split()
-        keep = []
-        for w in words:
-            trial = " ".join(keep + [w])
-            if lw + tw(trial, bf) <= col_w:
-                keep.append(w)
-            else:
-                break
-        text(bx, by, lead, lf, fill=RED)
-        text(bx + lw, by, " ".join(keep), bf, fill=INK)
+    flow_briefs(412, y0 + 16, W - 8, y0 + 168, BRIEFS)
 
     # --- date-check footer + sources ---------------------------------------
-    fy = 940
+    fy = 936
     rect(8, fy, W - 8, fy + 52, fill=None, outline=RED, width=2)
     text(14, fy + 5, "DATE CHECK", font(SANS_B, 10), fill=RED)
     para(108, fy + 5, DATE_CHECK, font(SERIF, 9), W - 122, leading=12,
@@ -616,5 +635,3 @@ def build():
 
 if __name__ == "__main__":
     build()
-
-
